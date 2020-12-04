@@ -53,7 +53,7 @@ async def recv_msg(websocket):
             obj = json.loads(recv_text)
             user_name = g_conn[websocket]
             g_state[user_name].update(obj)
-            print('o',obj)
+            print('o',user_name,obj)
         except:
             print('json err '+recv_text)
 
@@ -90,13 +90,18 @@ async def tick_send_all():
         for ws in g_conn:
             if ws.closed:
                 print('closeeeeeeeeeeeeeeeeeeee')
+                del g_state[g_conn[ws]]
                 del g_conn[ws]
                 break
             else:
                 send_str = json.dumps({str(g_count):g_state})
                 await ws.send(send_str)
 
-        g_count+=1
+        if g_count == 65535:
+            g_count = 0
+        else:
+            g_count+=1
+        
         print('send',g_count)
 
 async def main():
